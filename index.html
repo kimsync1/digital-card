@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Digital Business Card</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, #17251f 0%, #0b0f0e 45%, #050706 100%);
+      color: white;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: auto;
+      padding: 45px 22px 35px;
+      text-align: center;
+    }
+
+    .profile-photo,
+    .profile-placeholder {
+      width: 115px;
+      height: 115px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      border: 3px solid #8fe3c1;
+      padding: 3px;
+      object-fit: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .profile-placeholder {
+      background: #18211e;
+      color: #8fe3c1;
+      font-size: 45px;
+      font-weight: bold;
+    }
+
+    .name {
+      font-size: 30px;
+      font-weight: bold;
+      margin-bottom: 7px;
+    }
+
+    .position {
+      color: #8fe3c1;
+      font-size: 17px;
+      margin-bottom: 5px;
+    }
+
+    .company {
+      color: #aaa;
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+
+    .button {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: #121917;
+      border: 1px solid #27332f;
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: bold;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .button:active {
+      transform: scale(0.98);
+    }
+
+    .save {
+      background: linear-gradient(135deg, #8fe3c1, #5fc59e);
+      color: #07100c;
+      border: none;
+      margin-top: 18px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .loading {
+      color: #8fe3c1;
+      margin-top: 30px;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding-top: 35px;
+      }
+
+      .name {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div id="card">
+    <div class="loading">Loading digital card...</div>
+  </div>
+</div>
+
+
+<script>
+
+/* =========================
+   GOOGLE APPS SCRIPT API
+========================= */
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbxZxJTmRtS7_aRCyjDw1nyd-9R0nP22Bg72qDwzYejZOnrVWOQSd9lEkY1QEH-5pIAtiA/exec";
+
+
+/* =========================
+   GET CARD ID
+========================= */
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const cardId =
+  params.get("id") ||
+  "ID00002";
+
+
+/* =========================
+   LOAD CARD
+========================= */
+
+function loadCard(person) {
+
+  if (
+    !person ||
+    !person["Full Name"]
+  ) {
+
+    document.getElementById("card").innerHTML =
+      '<div class="loading">Card not found.</div>';
+
+    return;
+  }
+
+
+  let html = "";
+
+
+  /* =========================
+     PHOTO
+  ========================= */
+
+  if (person["Photo URL"]) {
+
+    html += `
+      <img
+        class="profile-photo"
+        src="${person["Photo URL"]}"
+        alt="Profile Photo"
+      >
+    `;
+
+  } else {
+
+    html += `
+      <div class="profile-placeholder">
+        ${
+          String(
+            person["Full Name"]
+          )
+          .charAt(0)
+          .toUpperCase()
+        }
+      </div>
+    `;
+  }
+
+
+  /* =========================
+     BASIC INFORMATION
+  ========================= */
+
+  html += `
+    <div class="name">
+      ${person["Full Name"] || ""}
+    </div>
+
+    <div class="position">
+      ${person["Position"] || ""}
+    </div>
+
+    <div class="company">
+      ${person["Company/Organization"] || ""}
+    </div>
+  `;
+
+
+  /* =========================
+     FACEBOOK
+  ========================= */
+
+  if (person["Facebook"]) {
+
+    html += `
+      <a
+        class="button"
+        href="${person["Facebook"]}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        📘 FACEBOOK
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     MESSENGER
+  ========================= */
+
+  if (person["Messenger"]) {
+
+    html += `
+      <a
+        class="button"
+        href="${person["Messenger"]}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        💬 MESSENGER
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     CALL ME
+  ========================= */
+
+  if (person["Phone"]) {
+
+    const phone =
+      String(person["Phone"])
+        .replace(/\s+/g, "");
+
+    html += `
+      <a
+        class="button"
+        href="tel:${phone}"
+      >
+        📞 CALL ME
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     EMAIL
+  ========================= */
+
+  if (person["Email"]) {
+
+    html += `
+      <a
+        class="button"
+        href="mailto:${person["Email"]}"
+      >
+        ✉️ EMAIL ME
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     INSTAGRAM
+  ========================= */
+
+  if (person["Instagram"]) {
+
+    html += `
+      <a
+        class="button"
+        href="${person["Instagram"]}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        📸 INSTAGRAM
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     LINKEDIN
+  ========================= */
+
+  if (person["LinkedIn"]) {
+
+    html += `
+      <a
+        class="button"
+        href="${person["LinkedIn"]}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        💼 LINKEDIN
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     X
+  ========================= */
+
+  if (person["X"]) {
+
+    html += `
+      <a
+        class="button"
+        href="${person["X"]}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        𝕏 X
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     WEBSITE
+  ========================= */
+
+  if (person["Website"]) {
+
+    html += `
+      <a
+        class="button"
+        href="${person["Website"]}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        🌐 WEBSITE
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     ADDRESS
+  ========================= */
+
+  if (person["Address"]) {
+
+    const address =
+      encodeURIComponent(
+        person["Address"]
+      );
+
+    html += `
+      <a
+        class="button"
+        href="https://www.google.com/maps/search/?api=1&query=${address}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        📍 ADDRESS
+      </a>
+    `;
+  }
+
+
+  /* =========================
+     SAVE CONTACT
+  ========================= */
+
+  html += `
+    <button
+      type="button"
+      class="button save"
+      onclick="saveContact()"
+    >
+      ＋ SAVE TO CONTACTS
+    </button>
+
+    <div class="footer">
+      Digital Business Card
+    </div>
+  `;
+
+
+  document.getElementById("card").innerHTML =
+    html;
+}
+
+
+/* =========================
+   SAVE CONTACT
+========================= */
+
+function saveContact() {
+
+  /*
+   * Temporary:
+   * We will connect this to
+   * Google Apps Script vCard
+   * after the GitHub page works.
+   */
+
+  alert(
+    "Preparing your contact..."
+  );
+}
+
+
+/* =========================
+   LOAD DATA FROM APPS SCRIPT
+========================= */
+
+const script =
+  document.createElement("script");
+
+
+script.src =
+  API_URL +
+  "?api=1&id=" +
+  encodeURIComponent(cardId);
+
+
+document.body.appendChild(script);
+
+</script>
+
+</body>
+</html>
